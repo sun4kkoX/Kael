@@ -3,7 +3,7 @@
 ## Validar a estrutura (Fase 0)
 ```bash
 python3.12 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install pytest
 make validate        # testes de estrutura e de regras do repositório
 make compose-check   # valida a sintaxe do Compose (requer Docker)
 ```
