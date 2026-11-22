@@ -1,0 +1,12 @@
+# Ferramental de validação do repositório (Fase 0).
+# Única dependência de desenvolvimento: pytest (executa os testes de estrutura).
+[project]
+name = "kael-repo-tooling"
+version = "0.0.0"
+requires-python = ">=3.12"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

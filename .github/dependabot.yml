@@ -1,0 +1,7 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+# Adicionar pip (apps/api) e npm (apps/web) quando os manifestos existirem.
