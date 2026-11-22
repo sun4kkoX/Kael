@@ -15,6 +15,10 @@
 | RK-10 | Perda de dados ou recuperação não testada | Alto | Backups e restauração testados | Aberto |
 | RK-11 | Complexidade operacional do Private | Médio | Documentação e atualizações versionadas | Aberto |
 | RK-12 | Perda de mensagens no Redis (durabilidade da fila) | Médio | Persistência configurada, reprocessamento idempotente | Aberto |
+| RK-13 | Injeção de fórmula em exportações CSV e Excel | Médio | Neutralizar células perigosas (TM-15) | Aberto |
+| RK-14 | SSRF por URLs fornecidas pelo usuário nas integrações | Alto | Apenas hosts conhecidos (TM-27) | Aberto |
+| RK-15 | Bomba de descompressão ou arquivo gigante | Alto | Limites e streaming (TM-14) | Aberto |
+| RK-16 | Abuso interno pela equipe KAEL no Cloud | Alto | Mínimo privilégio e acesso emergencial auditado (TM-34) | Aberto |
 
 ## Decisões pendentes
 | ID | Pergunta | Necessária antes de |

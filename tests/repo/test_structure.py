@@ -12,6 +12,7 @@ REQUIRED_FILES = [
     ".env.example",
     "docs/ARCHITECTURE.md",
     "docs/SECURITY.md",
+    "docs/THREAT_MODEL.md",
     "docs/RISKS_AND_DECISIONS.md",
     "docs/DEVELOPMENT.md",
     "docs/ADR/README.md",
@@ -70,3 +71,11 @@ def test_compose_has_no_literal_secrets_and_binds_localhost():
         if re.match(r'\s*-\s*"\d+:\d+"', line) or re.match(r'\s*-\s*"[\d.]*:?\d+:\d+"', line):
             assert "127.0.0.1" in line, f"Porta exposta fora de localhost: {line.strip()}"
         assert ":latest" not in line, f"Tag latest proibida: {line.strip()}"
+
+
+def test_threat_model_has_core_sections_and_critical_threats():
+    text = (ROOT / "docs/THREAT_MODEL.md").read_text(encoding="utf-8")
+    for section in ["## 1. Ativos", "## 2. Atores", "## 3. Fronteiras de confiança", "## 4. Ameaças"]:
+        assert section in text, f"Seção ausente no modelo de ameaças: {section}"
+    for tid in ["TM-03", "TM-08", "TM-19", "TM-20"]:
+        assert tid in text, f"Ameaça crítica ausente: {tid}"
