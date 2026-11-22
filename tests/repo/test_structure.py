@@ -13,6 +13,9 @@ REQUIRED_FILES = [
     "docs/ARCHITECTURE.md",
     "docs/SECURITY.md",
     "docs/THREAT_MODEL.md",
+    "docs/IDENTITY_AND_ISOLATION.md",
+    "docs/DATA_MODEL.md",
+    "docs/ISOLATION_TEST_PLAN.md",
     "docs/RISKS_AND_DECISIONS.md",
     "docs/DEVELOPMENT.md",
     "docs/ADR/README.md",
@@ -79,3 +82,15 @@ def test_threat_model_has_core_sections_and_critical_threats():
         assert section in text, f"Seção ausente no modelo de ameaças: {section}"
     for tid in ["TM-03", "TM-08", "TM-19", "TM-20"]:
         assert tid in text, f"Ameaça crítica ausente: {tid}"
+
+
+def test_isolation_docs_are_proposals_and_cover_key_rules():
+    ident = (ROOT / "docs/IDENTITY_AND_ISOLATION.md").read_text(encoding="utf-8")
+    data = (ROOT / "docs/DATA_MODEL.md").read_text(encoding="utf-8")
+    plan = (ROOT / "docs/ISOLATION_TEST_PLAN.md").read_text(encoding="utf-8")
+    for name, text in [("IDENTITY", ident), ("DATA_MODEL", data), ("ISOLATION_TEST_PLAN", plan)]:
+        assert "**Status:** Proposto" in text, f"{name}: deve constar como Proposto"
+    assert "FORCE ROW LEVEL SECURITY" in data
+    assert "organization_id" in data
+    for tid in ["IT-01", "IT-08", "IT-22", "IT-37", "IT-38"]:
+        assert tid in plan, f"Teste ausente no plano: {tid}"

@@ -38,3 +38,8 @@
 | PD-13 | Política de atualização e suporte de versões do Private | Aprovar ADR-002 |
 | PD-14 | Política de retenção de dados | Modelo de dados |
 | PD-15 | Escopo de SSO (OIDC, SAML) no primeiro lançamento | Identidade |
+| PD-16 | Um usuário pode pertencer a várias organizações no Cloud? | Identidade e isolamento |
+| PD-17 | Keycloak: um realm único no Cloud (proposto) ou um realm por organização? | Identidade |
+| PD-18 | Papéis personalizados por organização já na primeira versão? | Autorização |
+| PD-19 | Particionamento e retenção da auditoria; política de acesso emergencial da equipe KAEL | Auditoria |
+| PD-20 | Estratégia de chaves primárias (UUID v4 ou v7 gerado na aplicação) | Modelo de dados |
