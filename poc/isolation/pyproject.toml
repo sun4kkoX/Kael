@@ -1,0 +1,6 @@
+# Configuracao do pytest da prova de conceito (rodar a partir de poc/isolation).
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]
+addopts = "-ra"
+xfail_strict = true

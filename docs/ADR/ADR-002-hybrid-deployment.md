@@ -50,3 +50,10 @@ Desenvolvimento, homologação e produção separados. Sem dados reais de client
 - Subir o mesmo conjunto de testes de isolamento nos dois perfis.
 - Procedimentos de instalação e atualização do Private escritos e executados em ambiente limpo.
 - Decisões PD-01, PD-02, PD-04 e PD-13 resolvidas.
+
+## Decisões de entrada aprovadas pelo responsável (2026-11-22)
+Estas decisões **não aprovam esta ADR**. Ela continua *Proposta* até os critérios acima serem cumpridos.
+- PD-17: realm compartilhado no Cloud, com separação lógica de organizações pelo domínio de autorização do KAEL e pelo RLS. Realm independente por instalação Private. Identidade separada por ambiente (desenvolvimento, homologação, produção). Realm dedicado por organização no Cloud só como exceção Enterprise.
+- PD-18: o banco do KAEL é a fonte de verdade organizacional. O Keycloak cuida de identidade e autenticação.
+- PD-20: o Private funciona com identidade, banco, armazenamento e configuração independentes, sem dependência obrigatória do Cloud.
+Impactos: ver docs/DECISION_IMPACT_PD16_20.md e os diagramas em docs/ARCHITECTURE.md. Nada disso é evidência de implementação.

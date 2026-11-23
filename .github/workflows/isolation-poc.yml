@@ -1,0 +1,60 @@
+name: Isolation PoC
+on:
+  pull_request:
+    paths:
+      - "poc/isolation/**"
+      - ".github/workflows/isolation-poc.yml"
+  push:
+    branches: [main]
+    paths:
+      - "poc/isolation/**"
+      - ".github/workflows/isolation-poc.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolation-poc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependências da prova de conceito
+        working-directory: poc/isolation
+        run: pip install -r requirements.txt
+      - name: Iniciar PostgreSQL 16 real (senha aleatória, só nesta execução)
+        run: |
+          PW="$(openssl rand -hex 16)"
+          echo "::add-mask::$PW"
+          docker run -d --name kael-pg -e POSTGRES_PASSWORD="$PW" -p 127.0.0.1:5432:5432 postgres:16
+          echo "KAEL_POC_ADMIN_DSN=postgresql://postgres:${PW}@127.0.0.1:5432/postgres" >> "$GITHUB_ENV"
+          for i in $(seq 1 90); do
+            if [ "$(docker logs kael-pg 2>&1 | grep -c 'database system is ready to accept connections')" -ge 2 ]; then
+              break
+            fi
+            sleep 1
+          done
+          docker exec kael-pg psql -U postgres -tAc "select version()"
+      - name: Executar testes de isolamento (IT-01 a IT-11 e complementares)
+        working-directory: poc/isolation
+        env:
+          KAEL_POC_EVIDENCE_DIR: ${{ github.workspace }}/poc-evidence
+        run: |
+          mkdir -p "$KAEL_POC_EVIDENCE_DIR"
+          python -m pytest -v --junitxml="$KAEL_POC_EVIDENCE_DIR/junit.xml"
+      - name: Resumo dos resultados
+        if: always()
+        working-directory: poc/isolation
+        run: |
+          python -m kael_poc.report "${{ github.workspace }}/poc-evidence/junit.xml" "${{ github.workspace }}/poc-evidence" >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Publicar evidências
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poc-isolation-evidence
+          path: poc-evidence
+      - name: Encerrar PostgreSQL
+        if: always()
+        run: docker rm -f kael-pg || true

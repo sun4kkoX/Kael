@@ -75,3 +75,11 @@ RK-01 (vazamento por contexto mal definido com pooling), RK-02 (funções privil
 - Teste de restauração de backup.
 - Medição de desempenho das políticas RLS em volume representativo.
 - Decisão do provedor Cloud (PD-04).
+
+## Decisões de entrada aprovadas pelo responsável (2026-11-22)
+Estas decisões **não aprovam esta ADR**. Ela continua *Proposta* até a prova de conceito.
+- PD-16: um usuário pode ter memberships em várias organizações, cada uma com papel, permissões e estado próprios.
+- PD-18: o banco do KAEL é a fonte de verdade de organizações, memberships, papéis e permissões.
+- PD-19: a membership é validada pelo backend a cada operação, e o contexto de organização do banco só é definido com valor verificado.
+- PD-20: no Private, o banco é dedicado e independente dos serviços do Cloud.
+Impactos no esquema: `users` com `(idp_issuer, idp_subject)` único, `memberships` com estados, `organizations` com `security_policy` e `realm_ref`. Ver docs/DECISION_IMPACT_PD16_20.md. Nada disso é evidência de implementação.

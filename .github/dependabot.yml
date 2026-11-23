@@ -4,4 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-# Adicionar pip (apps/api) e npm (apps/web) quando os manifestos existirem.
+  - package-ecosystem: "pip"
+    directory: "/poc/isolation"
+    schedule:
+      interval: "weekly"
+# Adicionar npm (apps/web) quando o manifesto existir.

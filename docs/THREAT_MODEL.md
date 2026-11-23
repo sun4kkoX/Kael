@@ -1,4 +1,4 @@
-# Modelo de ameaças do KAEL (rascunho v0.1)
+# Modelo de ameaças do KAEL (rascunho v0.2)
 
 - **Status:** Rascunho. Baseado na arquitetura proposta (ADR-001 e ADR-002 ainda não aprovadas). Nada aqui é evidência de que os controles existem: eles são requisitos a implementar e testar.
 - **Método:** análise por fronteira de confiança, com categorias STRIDE (S = falsificação de identidade, T = adulteração, R = repúdio, I = vazamento de informação, D = negação de serviço, E = elevação de privilégio).
@@ -30,19 +30,22 @@
 ```mermaid
 flowchart LR
   B[Navegador] -->|F1| A[API]
+  B -->|F6 troca de organizacao| A
   A -->|F2| D[(PostgreSQL)]
   A -->|F3| Q[Fila Redis] --> W[Worker]
   U[Upload] -->|F3| S[(Armazenamento S3)]
   W --> S
-  W -->|F4| AI[Agente de IA / provedor de modelo]
-  A -->|F5| X[Google / Power BI]
-  A --> K[Keycloak OIDC]
+  W -->|F4| AI[Agente de IA]
+  A -->|F5| X[Google e Power BI]
+  A -->|F7 OIDC| K["Keycloak: realm por ambiente"]
 ```
 - F1: navegador para API (não confiável).
 - F2: API para banco (contexto da organização definido no servidor).
 - F3: arquivos enviados para processamento (isolado no worker).
 - F4: conteúdo de planilhas para o agente de IA (apenas dado).
 - F5: API para integrações externas (credenciais por organização).
+- F6: troca e seleção de organização (validadas no backend a cada requisição).
+- F7: identidade entre ambientes e instalações (realms, `iss` e `aud` separados).
 
 ## 4. Ameaças, controles e verificação
 Os requisitos (SR-*) estão em `docs/SECURITY.md`; riscos (RK-*) em `docs/RISKS_AND_DECISIONS.md`.
@@ -101,6 +104,17 @@ Os requisitos (SR-*) estão em `docs/SECURITY.md`; riscos (RK-*) em `docs/RISKS_
 | TM-29 | Efeitos duplicados por retentativa (a fila entrega pelo menos uma vez) | T | Média | Idempotência, chaves de deduplicação (SR-IDEM) | Testes de repetição e concorrência |
 | TM-30 | Automação agindo além da autoridade ou com permissões desatualizadas | E | Alta | Reverificar permissões na execução, aprovação humana em ações críticas | Testes de revogação de permissão |
 
+### Identidade multi-organização, realms e ambientes (PD-16 a PD-20)
+| ID | Ameaça | STRIDE | Sev. | Controles planejados | Verificação |
+|---|---|---|---|---|---|
+| TM-37 | Troca de organização forjada ou com membership revogada, suspensa ou desatualizada | E, I | Crítica | Organização explícita em cada requisição, membership revalidada a cada uma, resposta uniforme, auditoria `org.switch` | IT-40 a IT-44, IT-53 |
+| TM-38 | Interface mostrando dados em cache da organização anterior após a troca | I | Alta | Descartar caches e estado ao trocar, chaves de cache por organização | IT-45 |
+| TM-39 | Comprometimento do realm compartilhado do Keycloak afetando todas as organizações do Cloud | E, I | Alta | Console admin restrito e com MFA, configuração como código, auditoria, realm dedicado Enterprise e Private para alto risco | IT-48 e revisão de configuração |
+| TM-40 | Vinculação indevida de contas por e-mail em SSO (assumir conta de outra organização) | S, E | Alta | Vínculo explícito entre provedor e organização, sem vinculação automática por e-mail, exigir e-mail verificado | IT-49 |
+| TM-41 | Token de um ambiente ou instalação aceito em outro (replay) | S | Alta | `iss` e `aud` separados por ambiente, lista de emissores por instalação, segredos distintos | IT-46, IT-47, IT-51 |
+| TM-42 | Dependência oculta do Cloud no Private (telemetria, licença, atualização) | I | Alta | Nenhuma chamada obrigatória ao Cloud, opcionais desligadas por padrão | IT-50 |
+| TM-43 | Tratar claims do token (organização, papel, grupo) como autoridade | E | Crítica | O banco do KAEL é a fonte de verdade (PD-18), claims só identificam | IT-52 |
+
 ### Plataforma, operação e cadeia de suprimentos
 | ID | Ameaça | STRIDE | Sev. | Controles planejados | Verificação |
 |---|---|---|---|---|---|
@@ -112,7 +126,7 @@ Os requisitos (SR-*) estão em `docs/SECURITY.md`; riscos (RK-*) em `docs/RISKS_
 | TM-36 | Adulteração ou repúdio na trilha de auditoria | R, T | Alta | Auditoria somente de acréscimo, por organização, com retenção definida (PD-14) | Teste de imutabilidade |
 
 ## 5. Prioridades
-1. **Críticas:** TM-03, TM-04, TM-08, TM-09, TM-10, TM-17, TM-19, TM-20. Devem ter teste automatizado antes de qualquer dado de cliente.
+1. **Críticas:** TM-03, TM-04, TM-08, TM-09, TM-10, TM-17, TM-19, TM-20, TM-37, TM-43. Devem ter teste automatizado antes de qualquer dado de cliente.
 2. **Altas:** demais itens de autenticação, arquivos, integrações e cadeia de suprimentos.
 3. **Médias:** tratadas no fluxo normal de desenvolvimento.
 

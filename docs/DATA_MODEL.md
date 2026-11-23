@@ -1,7 +1,7 @@
 # Modelo de dados (proposta v0.1)
 
 - **Status:** Proposto. Esquema conceitual, ainda sem migrações. Depende da aprovação da ADR-001.
-- **Convenções:** chaves `uuid` (estratégia exata em PD-20), datas em `timestamptz`, nomes em inglês nas tabelas e colunas. Toda tabela de negócio tem `organization_id NOT NULL`.
+- **Convenções:** chaves `uuid` (estratégia exata em PD-23), datas em `timestamptz`, nomes em inglês nas tabelas e colunas. Toda tabela de negócio tem `organization_id NOT NULL`.
 
 ## 1. Regras de isolamento no esquema
 1. Toda tabela de negócio tem `organization_id`, com RLS **habilitado e forçado** e políticas separadas de SELECT, INSERT, UPDATE e DELETE.
@@ -14,9 +14,9 @@
 ### 2.1 Plataforma e identidade
 | Tabela | Conteúdo principal | Observação |
 |---|---|---|
-| `organizations` | id, slug, name, status, limits (cotas), created_at | Sem RLS por organização. Leitura restrita pelo papel de aplicação à organização do contexto |
-| `users` | id, idp_subject (único), email, display_name, status | Identidade global, mínimo de dados pessoais |
-| `memberships` | id, organization_id, user_id, role, status, invited_by, created_at | Único `(organization_id, user_id)`. Política dupla (seção 3) |
+| `organizations` | id, slug, name, status, limits (cotas), security_policy (ex.: MFA exigido por papel), realm_ref (nulo no realm compartilhado; só em realm dedicado Enterprise), created_at | Sem RLS por organização. Leitura restrita pelo papel de aplicação à organização do contexto |
+| `users` | id, idp_issuer, idp_subject, email, display_name, status, last_org_id | Identidade global no realm. Único `(idp_issuer, idp_subject)`. `last_org_id` é só preferência de interface e não autoriza |
+| `memberships` | id, organization_id, user_id, role, status (invited, active, suspended, removed), invited_by, created_at | Único `(organization_id, user_id)`. Cada membership tem papel, permissões e estado próprios. Política dupla (seção 3) |
 | `invitations` | id, organization_id, email, role, token_hash, expires_at, accepted_at, status | Só o hash do token |
 
 ### 2.2 Arquivos e dados
@@ -57,7 +57,7 @@ Cada indicador guarda fonte, período e execução, para que seja possível rast
 | Tabela | Conteúdo principal |
 |---|---|
 | `idempotency_keys` | organization_id, scope, key, request_hash, status, response_ref, created_at, expires_at. Chave primária `(organization_id, scope, key)` |
-| `audit_events` | id, organization_id (nulo para eventos de plataforma), actor_user_id, actor_type, action, resource_type, resource_id, outcome, ip, request_id, metadata (sem segredos), occurred_at. Candidata a particionamento por mês (PD-19) |
+| `audit_events` | id, organization_id (nulo para eventos de plataforma), actor_user_id, actor_type, action (inclui `org.switch`), resource_type, resource_id, outcome, ip, request_id, metadata (sem segredos), occurred_at. Candidata a particionamento por mês (PD-22) |
 | `usage_records` | organization_id, period, metric (tokens, armazenamento, processamento), value |
 | `retention_policies` | organization_id, resource_type, days. Valores definidos em PD-14 |
 
@@ -101,7 +101,8 @@ Detalhe importante: depois de um `set_config` local à transação, o parâmetro
 - **Mensagens do agente:** podem conter dados de clientes. Retenção e política do provedor de IA em PD-08 e PD-14.
 
 ## 5. Pendências
-- Estratégia de chaves (PD-20), particionamento e retenção da auditoria (PD-19).
-- Papéis personalizados (PD-18) e organização por usuário (PD-16).
+- Estratégia de chaves (PD-23), particionamento e retenção da auditoria (PD-22).
+- Papéis personalizados e sobreposição de permissões por membership (PD-21).
+- O banco do KAEL é a fonte de verdade de organizações, memberships, papéis e permissões (PD-18).
 - Validar o desempenho das políticas de RLS em volume (RK-06).
 - Escrever migrações **somente depois** da aprovação das ADRs.

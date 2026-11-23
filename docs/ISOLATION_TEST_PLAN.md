@@ -47,11 +47,31 @@
 | IT-38 | Planilha com instruções escondidas pedindo para ignorar regras ou usar outra ferramenta | Tratada como dado, nenhuma ferramenta nova habilitada | TM-19 |
 | IT-39 | Exportação com células iniciadas por `=`, `+`, `-`, `@` | Neutralizadas | TM-15 |
 
+## 3b. Multi-organização, realms e ambientes (decisões PD-16 a PD-20)
+| ID | Teste | Resultado esperado | Ameaça |
+|---|---|---|---|
+| IT-40 | Trocar para organização sem membership | Negado e auditado, resposta igual à de recurso inexistente | TM-37 |
+| IT-41 | Trocar para organização com membership suspensa ou removida | Negado | TM-37 |
+| IT-42 | Usuário `admin` na A e `viewer` na B tenta ação de admin com o cabeçalho da B | Negado (permissão vale só na organização da requisição) | TM-37 |
+| IT-43 | Política de MFA da organização: token sem o nível exigido acessa a organização que exige MFA | Reautenticação reforçada exigida | TM-37 |
+| IT-44 | Requisições concorrentes com o mesmo token alternando organizações A e B | Cada resposta só contém dados da organização do seu cabeçalho | TM-37 |
+| IT-45 | Interface (Playwright): após trocar de organização, nada da anterior fica em tela nem em cache | Nenhum dado da organização anterior | TM-38 |
+| IT-46 | Token de outro emissor, de outro ambiente ou de outra instalação Private | 401 | TM-41 |
+| IT-47 | Mesmo `sub` vindo de emissores diferentes | Usuários distintos, nunca o mesmo | TM-41 |
+| IT-48 | Busca e listagem de usuários só mostram quem tem membership na organização da requisição | Nenhum usuário de outra organização | TM-39 |
+| IT-49 | Provedor de SSO de uma organização tenta assumir o e-mail de usuário existente em outra | Vinculação recusada sem verificação explícita | TM-40 |
+| IT-50 | Private com saída de rede para hosts do Cloud bloqueada: instalação e suíte completa | Tudo passa, nenhuma chamada ao Cloud | TM-42 |
+| IT-51 | Verificação de configuração: desenvolvimento, homologação e produção com `iss`, `aud` e segredos distintos | Falha se houver repetição | TM-41 |
+| IT-52 | Token assinado com claims forjadas de organização, papel ou grupo | Ignoradas, permissões vêm só do banco | TM-43 |
+| IT-53 | Mudança de papel ou remoção de membership entre duas requisições do mesmo token | A segunda requisição já reflete a mudança | TM-37 |
+
 ## 4. Critérios de aceite
 - Todos os testes IT-01 a IT-11 passam no PostgreSQL real, nos perfis Cloud e Private (ADR-002).
 - IT-20 a IT-29 passam em toda rota existente. **Rota nova sem teste negativo não passa em revisão.**
 - IT-08 impede o esquecimento de RLS em tabelas futuras.
+- IT-40 a IT-53 passam antes de qualquer lançamento multi-organização.
 - Os testes rodam no CI a cada pull request.
+- Este plano não é evidência de implementação: a propriedade só vale quando o teste existe e passa.
 
 ## 5. Pendências
 - Escolher a forma de gerar dados sintéticos multiempresa.

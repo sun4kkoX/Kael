@@ -19,6 +19,10 @@
 | RK-14 | SSRF por URLs fornecidas pelo usuário nas integrações | Alto | Apenas hosts conhecidos (TM-27) | Aberto |
 | RK-15 | Bomba de descompressão ou arquivo gigante | Alto | Limites e streaming (TM-14) | Aberto |
 | RK-16 | Abuso interno pela equipe KAEL no Cloud | Alto | Mínimo privilégio e acesso emergencial auditado (TM-34) | Aberto |
+| RK-17 | Raio de impacto de um comprometimento do realm compartilhado do Keycloak | Alto | Console admin restrito e com MFA, configuração como código, realm dedicado Enterprise (TM-39) | Aberto |
+| RK-18 | Troca de organização com contexto desatualizado ou dados em cache na interface | Alto | Organização explícita por requisição, descarte de cache, testes (TM-37, TM-38) | Aberto |
+| RK-19 | Token de um ambiente ou instalação aceito em outro | Alto | `iss` e `aud` separados por ambiente (TM-41) | Aberto |
+| RK-20 | Dependência oculta do Cloud no Private | Alto | Teste com saída de rede bloqueada (TM-42) | Aberto |
 
 ## Decisões pendentes
 | ID | Pergunta | Necessária antes de |
@@ -38,8 +42,17 @@
 | PD-13 | Política de atualização e suporte de versões do Private | Aprovar ADR-002 |
 | PD-14 | Política de retenção de dados | Modelo de dados |
 | PD-15 | Escopo de SSO (OIDC, SAML) no primeiro lançamento | Identidade |
-| PD-16 | Um usuário pode pertencer a várias organizações no Cloud? | Identidade e isolamento |
-| PD-17 | Keycloak: um realm único no Cloud (proposto) ou um realm por organização? | Identidade |
-| PD-18 | Papéis personalizados por organização já na primeira versão? | Autorização |
-| PD-19 | Particionamento e retenção da auditoria; política de acesso emergencial da equipe KAEL | Auditoria |
-| PD-20 | Estratégia de chaves primárias (UUID v4 ou v7 gerado na aplicação) | Modelo de dados |
+| PD-21 | Papéis personalizados por organização e sobreposição de permissões por membership além do papel? | Autorização |
+| PD-22 | Particionamento e retenção da auditoria; política de acesso emergencial da equipe KAEL | Auditoria |
+| PD-23 | Estratégia de chaves primárias (UUID v4 ou v7 gerado na aplicação) | Modelo de dados |
+
+## Decisões tomadas pelo responsável (2026-11-22)
+| ID | Decisão | Documentos afetados |
+|---|---|---|
+| PD-16 | Usuário com identidade global pode pertencer a várias organizações. Cada membership tem papel, permissões e estado próprios, e a troca é validada no backend | IDENTITY_AND_ISOLATION, DATA_MODEL |
+| PD-17 | Realm compartilhado no Cloud. Realm independente por instalação Private e por ambiente. Realm dedicado por organização só como exceção Enterprise | IDENTITY_AND_ISOLATION, ADR-002, ARCHITECTURE |
+| PD-18 | O banco do KAEL é a fonte de verdade de organizações, memberships, papéis e permissões. O Keycloak cuida de identidade e autenticação | ADR-001, ADR-002, DATA_MODEL |
+| PD-19 | O backend valida a membership em cada operação, sem confiar só em `tenant_id` do cliente ou em claim não validada | IDENTITY_AND_ISOLATION, THREAT_MODEL |
+| PD-20 | O Private funciona com identidade, banco, armazenamento e configuração independentes, sem dependência obrigatória do Cloud | ADR-002, ARCHITECTURE, THREAT_MODEL |
+
+Decidir não é implementar: as propriedades só valem quando comprovadas por testes automatizados. Análise em `docs/DECISION_IMPACT_PD16_20.md`.
