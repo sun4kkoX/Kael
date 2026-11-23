@@ -51,7 +51,7 @@ jobs:
           python -m kael_poc.report "${{ github.workspace }}/poc-evidence/junit.xml" "${{ github.workspace }}/poc-evidence" >> "$GITHUB_STEP_SUMMARY" || true
       - name: Publicar evidências
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: poc-isolation-evidence
           path: poc-evidence
